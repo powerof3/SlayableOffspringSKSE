@@ -1,58 +1,44 @@
 ﻿#include "version.h"
 
+bool applyBloodDecals;
+bool triggerMines;
+bool applyBash;
+bool recoverArrows;
 
-class ChildCheckPatch
+class IsChild
 {
 public:
-	static void MineTrigger()
+	static void Patch()
 	{
+		//FF 90 F0 02 00 00	- call qword ptr [rax+2F0h]
+
+		std::array targets{
+			std::make_tuple(true, 36247, 0x32),				 // isValidMurderTarget
+			std::make_tuple(true, 36872, 0x87),				 // killImpl
+			std::make_tuple(applyBloodDecals, 36682, 0xE0),	 // applySkinBloodDecals
+			std::make_tuple(triggerMines, 43026, 0x164),	 // triggerMines
+			std::make_tuple(applyBash, 37673, 0x220),		 // applyBash
+			std::make_tuple(recoverArrows, 42856, 0x1D1),	 // recoverArrows
+			std::make_tuple(true, 53860, 0x97),				 // damageActorValue_Script
+		};
+
 		struct Patch : Xbyak::CodeGenerator
 		{
 			Patch()
 			{
-				call(qword[rax + 0x830]);
+				call(qword[rax + 0x830]);  //unused vfunc? that returns false for actor classes
 			}
 		};
 
 		Patch patch;
 		patch.ready();
 
-		REL::Relocation<std::uintptr_t> target{ REL::ID(43026) }; 
-		REL::safe_write(target.address() + 0x164, stl::span{ patch.getCode(), patch.getSize() });
-	}
-
-	static void IsValidMurderTarget()
-	{
-		struct Patch : Xbyak::CodeGenerator
-		{
-			Patch()
-			{
-				call(qword[rax + 0x830]);
+		for (const auto& [toggle, id, offset] : targets) {
+			if (toggle) {
+				REL::Relocation<std::uintptr_t> target{ REL::ID(id) };
+				REL::safe_write(target.address() + offset, stl::span{ patch.getCode(), patch.getSize() });
 			}
-		};
-
-		Patch patch;
-		patch.ready();
-
-		REL::Relocation<std::uintptr_t> target{ REL::ID(36247) };
-		REL::safe_write(target.address() + 0x32, stl::span{ patch.getCode(), patch.getSize() });
-	}
-
-	static void KillImpl() 
-	{
-		struct Patch : Xbyak::CodeGenerator
-		{
-			Patch()
-			{
-				call(qword[rax + 0x830]);
-			}
-		};
-
-		Patch patch;
-		patch.ready();
-
-		REL::Relocation<std::uintptr_t> target{ REL::ID(36872) };
-		REL::safe_write(target.address() + 0x87, stl::span{ patch.getCode(), patch.getSize() });
+		}
 	}
 };
 
@@ -85,6 +71,32 @@ public:
 };
 
 
+void LoadSettings()
+{
+	constexpr auto path = L"Data/SKSE/Plugins/po3_SlayableOffspring.ini";
+
+	CSimpleIniA ini;
+	ini.SetUnicode();
+	ini.SetMultiKey();
+
+	ini.LoadFile(path);
+
+	applyBloodDecals = ini.GetBoolValue("Settings", "Apply Blood Decals", true);
+	ini.SetBoolValue("Settings", "Apply Blood Decals", applyBloodDecals, ";Children will bleed on hit.", true);
+
+	triggerMines = ini.GetBoolValue("Settings", "Trigger Runes", true);
+	ini.SetBoolValue("Settings", "Trigger Runes", triggerMines, ";Children will be able to trip runes.", true);
+
+	applyBash = ini.GetBoolValue("Settings", "Apply Bash Perks", true);
+	ini.SetBoolValue("Settings", "Trigger Runes", applyBash, ";Allows bash perk entry to work on children.", true);
+
+	recoverArrows = ini.GetBoolValue("Settings", "Recover Arrows", true);
+	ini.SetBoolValue("Settings", "Recover Arrows", recoverArrows, ";Player can recover arrows from corpses.", true);
+
+	ini.SaveFile(path);
+}
+
+
 extern "C" DLLEXPORT bool APIENTRY SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	try {
@@ -102,10 +114,10 @@ extern "C" DLLEXPORT bool APIENTRY SKSEPlugin_Query(const SKSE::QueryInterface* 
 		spdlog::set_default_logger(log);
 		spdlog::set_pattern("[%H:%M:%S] [%l] %v");
 
-		logger::info("Slayable Offsprings SKSE {}", SOS_VERSION_VERSTRING);
+		logger::info("Slayable Offspring SKSE {}", SOS_VERSION_VERSTRING);
 
 		a_info->infoVersion = SKSE::PluginInfo::kVersion;
-		a_info->name = "Slayable Offsprings SKSE";
+		a_info->name = "Slayable Offspring SKSE";
 		a_info->version = SOS_VERSION_MAJOR;
 
 		if (a_skse->IsEditor()) {
@@ -133,12 +145,13 @@ extern "C" DLLEXPORT bool APIENTRY SKSEPlugin_Query(const SKSE::QueryInterface* 
 extern "C" DLLEXPORT bool APIENTRY SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
 	try {
-		logger::info("Slayable Offsprings SKSE loaded");
+		logger::info("Slayable Offspring SKSE loaded");
 
 		SKSE::Init(a_skse);
 
-		ChildCheckPatch::KillImpl();
-		ChildCheckPatch::IsValidMurderTarget();
+		LoadSettings();
+
+		IsChild::Patch();
 		Invunerable::Patch();
 
 	} catch (const std::exception& e) {

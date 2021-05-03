@@ -24,7 +24,7 @@
     <ProjectGuid>{d9547a74-9855-471e-8a31-b2dd1b85fc64}</ProjectGuid>
     <RootNamespace>KillableChildren</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>po3_SlayableOffsprings</ProjectName>
+    <ProjectName>po3_SlayableOffspring</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
