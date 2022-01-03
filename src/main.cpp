@@ -80,7 +80,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "Slayable Offsprings SKSE";
+	a_info->name = "Slayable Offspring SKSE";
 	a_info->version = Version::MAJOR;
 
 	if (a_skse->IsEditor()) {
