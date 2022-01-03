@@ -32,7 +32,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE 
 
 project(
 	po3_SlayableOffspring
-	VERSION 2.0.0
+	VERSION 2.0.1
 	LANGUAGES CXX
 )
 
