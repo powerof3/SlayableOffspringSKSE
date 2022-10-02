@@ -54,7 +54,7 @@ namespace Hooks
 			{
 				auto result = func(a_this);
 				if (result && a_this) {
-					if (const auto actor = stl::adjust_pointer<RE::Character>(a_this, -0x98); actor && actor->IsChild()) {
+					if (const auto actor = stl::adjust_pointer<RE::Character>(a_this, -0xA0); actor && actor->IsChild()) {
 						result = false;
 					}
 				}
