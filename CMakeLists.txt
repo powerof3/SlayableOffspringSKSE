@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
-set(NAME "po3_SlayableOffspring")
-set(VERSION 2.1.0)
+set(NAME "po3_SlayableOffspring" CACHE STRING "")
+set(VERSION 2.1.0 CACHE STRING "")
 set(AE_VERSION 1)
 
 # ---- Options ----
