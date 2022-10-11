@@ -54,7 +54,7 @@ namespace Hooks
 			{
 				auto result = func(a_this);
 				if (result && a_this) {
-					if (const auto actor = stl::adjust_pointer<RE::Character>(a_this, -0xA0); actor && actor->IsChild()) {
+					if (const auto actor = stl::adjust_pointer<RE::Character>(a_this, OFFSET(-0x98, -0xA0)); actor && actor->IsChild()) {
 						result = false;
 					}
 				}
@@ -68,13 +68,13 @@ namespace Hooks
 		void Install()
 		{
 			stl::write_vfunc<RE::Character, 4, IsInvunerable>();
-		    logger::info("Installed invunerability patch"sv);
+			logger::info("Installed invunerability patch"sv);
 		}
 	}
 
 	void Install()
 	{
-		NotAChild::Install();
+	    NotAChild::Install();
 		MakeVunerable::Install();
 	}
 }
